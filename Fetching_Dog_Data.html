@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dog API Assignment</title>
+</head>
+
+<body>
+    <!-- These describe which parts of the homework correspond to each section of the web page -->
+    <h2>Part 1: Breeds in Console</h2>
+
+    <h2>Part 2: List of Breeds</h2>
+    <ul id="breedsList"> </ul>
+
+    <h2>Part 3: Specific Breed Information</h2>
+    <h3 id="specificDogTitle"> </h3>
+    <div id="specificDog"> </div>
+
+    <h5>Part 4 Optional</h5>
+
+    <h2>Part 5: Dog Facts and Groups</h2>
+    <h3>Dog Facts</h3>
+    <ol id="factsList"> </ol>
+    <h3>Dog Groups</h3>
+    <div id="dogGroups"> </div>
+
+    <script>
+        // These link our HTML elements to variables we can mess around with in JS
+        const breedsElement = document.getElementById("breedsList");
+        const dogElement = document.getElementById("specificDog");
+        const dogTitleElement = document.getElementById("specificDogTitle");
+        const factsElement = document.getElementById("factsList");
+        const groupsElement = document.getElementById("dogGroups");
+
+        // Part 1
+        async function loadBreeds() {
+            const response = await fetch('https://dogapi.dog/api/v2/breeds');
+            const json = await response.json();
+            // Initialize empty string, add breed to string and print in console until we loop through all breeds
+            let breedList = '';
+            for (let i = 0; i < json.data.length; i++) {
+                breedList += json.data[i].attributes.name + '\n';
+            }
+            console.log(breedList);
+        }
+
+        // Part 2
+        async function loadBreedsHTML() {
+            // Try-catch block for if we are unsuccessful in grabbing the API information
+            try {
+                const response = await fetch('https://dogapi.dog/api/v2/breeds');
+                const json = await response.json();
+                // Each breed becomes a list item that gets inserted into our unordered list with id "breedsList" until there are no more breeds to loop
+                for (let i = 0; i < json.data.length; i++) {
+                    // Create list element
+                    let li = document.createElement("li");
+                    // Put text into list element
+                    li.appendChild(document.createTextNode(json.data[i].attributes.name));
+                    // Append list element with our new text data (breeds) to "breedsList" unordered list.
+                    breedsElement.appendChild(li);
+                }
+            } catch (Error) {
+                // If we for some reason have an error when grabbing the API information, display error
+                console.log('Error:' + Error);
+            }
+        }
+
+        // Part 3
+        async function loadSpecificID(endpoint) {
+            try {
+                // "endpoint" parameter corresponds to a given dog ID
+                const response = await fetch(`https://dogapi.dog/api/v2/breeds/${endpoint}`);
+                const json = await response.json();
+                const info = json.data.attributes;
+                // Display dog ID of the type of dog we are inspecting
+                dogTitleElement.append('Dog ID: ' + endpoint);
+                // For in loop to loop through the properties of our given dog type
+                for (const property in info) {
+                    // Create paragraph element
+                    let pa = document.createElement("p");
+                    // Fill paragraph element with properties of our dog type
+                    pa.appendChild(document.createTextNode(`${property}: ` + JSON.stringify(info[property])));
+                    // Append paragraph element to our corresponding div element
+                    dogElement.appendChild(pa);
+                }
+            } catch (Error) {
+                console.log('Error:' + Error);
+            }
+        }
+
+        // Part 4 
+        // I wanted to do this part but I have too much other homework :(
+
+        // Part 5
+        async function loadFacts(numFacts = 5) {
+            try {
+                // For this section, I was going to create a button you could click to populate the page with dog facts.. but I don't have the time currently
+                const response = await fetch(`https://dogapi.dog/api/v2/facts?limit=${numFacts}`);
+                const json = await response.json();
+                // Loop until there are no more pulled facts to display (5 by default)
+                for (let i = 0; i < json.data.length; i++) {
+                    // Create list item
+                    let li = document.createElement("li");
+                    // Populate list item with desired information, which in this case is dog fact
+                    li.appendChild(document.createTextNode(json.data[i].attributes.body));
+                    // Append list item to ordered list 'factsList' to be displayed on webpage
+                    factsElement.appendChild(li);
+                }
+            } catch (Error) {
+                console.log('Error:' + Error);
+            }
+        }
+
+        async function loadGroups() {
+            const response = await fetch(`https://dogapi.dog/api/v2/groups`);
+            const json = await response.json();
+            // Pull all group information, loop through all groups
+            for (let i = 0; i < json.data.length; i++) {
+                // Variable for where we are pulling from while looping
+                const info = json.data[i];
+                // Create paragraph element
+                let pa = document.createElement("p");
+                // Append name of dog group along with how many breeds are in group into a string for our paragraph element
+                pa.appendChild(document.createTextNode(info.attributes.name + "; there are " + info.relationships.breeds.data.length + " breeds in this group."));
+                // Append paragraph to "dogGroups" div to display information about every dog group from dog API
+                dogGroups.appendChild(pa);
+            }
+        }
+
+        // Call all our functions for each part
+        loadBreeds();
+        loadBreedsHTML();
+        loadSpecificID("30f62219-e225-42cd-bd07-02425f944c07")
+        loadFacts();
+        loadGroups()
+    </script>
+</body>
+
+</html>
